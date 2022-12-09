@@ -8,12 +8,12 @@ from rdflib.namespace import RDF, RDFS, XSD, SOSA, TIME, Namespace, NamespaceMan
 from rdflib import Graph, Literal, URIRef
 from paho.mqtt import client as mqtt_client
 
+
 broker = 'test.mosquitto.org'
 topic = "teds22/group05/pressure"
 
 # generate client ID with pub prefix randomly
-client_id = f'python-mqtt-{random.randint(0, 100)}'
-
+client_id = 'python-mqtt-05'
 
 QUDT11 = Namespace("http://qudt.org/1.1/schema/qudt#")
 QUDTU11 = Namespace("http://qudt.org/1.1/vocab/unit#")
@@ -54,35 +54,13 @@ g.add((sensor, RDF.type, SOSA.Sensor))
 g.add((sensor, RDFS.label, Literal("Bosch Sensortec BMP282", lang='en')))
 g.add((sensor, SOSA.observes, sensorAtm))
 
+count_msg = 0
 
 def on_message(client, userdata, message):
-    print(f"\nmessage payload: {message.payload.decode('utf-8')}")
-    
-# START
-client = mqtt_client.Client(client_id)
-
-count_msg = 0
-mu, sigma = 1200.00, 1.0
-
-
-print("connect to broker")
-client.connect(broker)
-client.loop_start()
-client.subscribe(topic)
-
-# Attach "on_message" callback function (even handle) to "on_message" event
-client.on_message = on_message
-
-while count_msg < 10:
-
+    global count_msg
+    print("message received  " ,str(message.payload.decode("utf-8")))
     time.sleep(1)
-    
-    reading = f'{round(np.random.normal(mu, sigma), 2):.2f}'
-    dt = datetime.datetime.now()
-    dt = dt.strftime('%Y-%m-%dT%H:%M:%SZ')
-    message = f'{reading}|{dt}'
-    
-    result = client.publish(topic, message, qos=2)
+    message = message.payload.decode('utf-8')
     
     [reading, dt] = message.split('|')
 
@@ -96,14 +74,34 @@ while count_msg < 10:
     datetime_2017 = Literal(dt, datatype=XSD.dateTime)
     g.add((obsvervation, SOSA.hasSimpleResult, pressure))
     g.add((obsvervation, SOSA.resultTime, datetime_2017))
-    
-    print(f"Send `{message}` ")
     count_msg += 1
 
+
+    
+# START
+client = mqtt_client.Client(client_id)
+
+# Attach "on_message" callback function (even handle) to "on_message" event
+client.on_message = on_message
+
+print("connect to broker ", broker)
+client.connect(broker)
+
+print("Subscribe ", topic)
+client.subscribe(topic)
+
+client.loop_start()
+
+while count_msg < 1:
+    time.sleep(1)
+
+print("Unsubscribe")
 client.unsubscribe(topic)
+# Wait 4 s
 time.sleep(4)
 
-client.loop_stop
+
+client.loop_stop()
 
 print("Disconnect")
 client.disconnect()

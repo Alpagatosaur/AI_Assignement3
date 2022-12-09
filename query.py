@@ -1,8 +1,8 @@
 from rdflib import Graph
 
 g = Graph()
+# read ttl
 g.parse("pressure.ttl", format='ttl')
-
 
 q = """
 
@@ -12,6 +12,7 @@ q = """
 
         ?p sosa:resultTime ?dt .
     }
+    ORDER BY ?dt
 """
 
 for r in g.query(q):

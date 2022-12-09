@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
 import time
-import datetime
-import numpy as np
 
 from rdflib.namespace import RDF, RDFS, XSD, SOSA, TIME, Namespace, NamespaceManager
 from rdflib import Graph, Literal, URIRef
@@ -13,7 +11,7 @@ broker = 'test.mosquitto.org'
 topic = "teds22/group05/pressure"
 
 # generate client ID with pub prefix randomly
-client_id = 'python-mqtt-05'
+client_id = f'python-mqtt-{random.randint(10, 100)}'
 
 QUDT11 = Namespace("http://qudt.org/1.1/schema/qudt#")
 QUDTU11 = Namespace("http://qudt.org/1.1/vocab/unit#")
